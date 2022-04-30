@@ -1,10 +1,13 @@
 package main.java.com.mycompany.hotelmanagement;
 
+import main.java.com.mycompany.hotelmanagement.utils.DateToDays;
 import main.java.com.mycompany.hotelmanagement.utils.Guest;
 import main.java.com.mycompany.hotelmanagement.utils.Room;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class MainScreen extends javax.swing.JFrame {
@@ -12,6 +15,43 @@ public class MainScreen extends javax.swing.JFrame {
         initComponents();
         
         bill.setEditable(false);
+        updateCheckout();
+    }
+
+    public void updateCheckout() {
+        Room room = new Room();
+        List<Room> rooms = room.getBooked();
+        int size = rooms.size();
+        rno1.removeAllItems();
+        for(int i = 0; i < size; i++) {
+            int roomNumber = rooms.get(i).roomNumber;
+            rno1.addItem(roomNumber + "");
+//                System.out.println(roomNumber);
+        }
+    }
+
+    public void updateDouble() {
+
+        rno.removeAllItems();
+        Room room = new Room();
+        List<Room> rooms = room.getAvailable();
+        int size = rooms.size();
+        for(int i = 0; i < size; i++) {
+            int roomNumber = rooms.get(i).roomNumber;
+            if ( roomNumber > 200 && roomNumber <= 300) rno.addItem(rooms.get(i).roomNumber + "");
+//                System.out.println(roomNumber);
+        }
+    }
+
+    public void updateSingle() {
+        rno.removeAllItems();
+        Room room = new Room();
+        List<Room> rooms = room.getAvailable();
+        int size = rooms.size();
+        for(int i = 0; i < size; i++) {
+            int roomNumber = rooms.get(i).roomNumber;
+            if ( roomNumber > 100 && roomNumber <= 200) rno.addItem(rooms.get(i).roomNumber + "");
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -121,6 +161,11 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        checkoutbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkoutbtnActionPerformed(evt);
+            }
+        });
 
         bookbtn.setFont(new java.awt.Font("Fira Sans", 0, 18)); // NOI18N
         bookbtn.setText("BOOK NOW");
@@ -347,6 +392,64 @@ public class MainScreen extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_phn2ActionPerformed
 
+    private void checkoutbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkoutbtnActionPerformed
+        // TODO add your handling code here:
+        String months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec" };
+        String int_months[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"};
+
+
+        String dd = dd1.getSelectedItem().toString();
+        String mm = mm1.getSelectedItem().toString();
+        String yy = yy1.getSelectedItem().toString();
+        int i=0;
+
+        for(i = 0; i < 12; ++i){
+            if (mm.equals(months[i])){
+                break;
+            }
+        }
+
+        mm = int_months[i];
+
+        String checkoutDate = dd + "-" + mm + "-" + yy;
+
+        Room room = new Room(Integer.parseInt(rno1.getSelectedItem().toString()));
+        String checkin[] = room.checkout(checkoutDate).split(" ");
+
+        if (checkin[0].trim().length() == 1) {
+            checkin[0] = "0" + checkin[0];
+        }
+
+        String dd2 = checkin[0];
+        String mm2 = checkin[1];
+        String yy2 = checkin[2];
+
+        for(i = 0; i < 12; ++i){
+            if (mm2.equals(months[i])){
+                break;
+            }
+        }
+        mm2=int_months[i];
+        String checkinDate = dd2+"-"+mm2+"-"+yy2;
+
+        DateToDays diff = new DateToDays(checkinDate, checkoutDate);
+
+        double cost;
+        long days = diff.numberOfDays();
+        int rate = 1500;
+
+        if (room.roomNumber > 200) {
+            rate = 2000;
+        }
+
+        cost = (double)days * rate;
+
+        bill.setText(cost + "");
+
+        bookRoomActionPerformed(evt);
+        updateCheckout();
+    }//GEN-LAST:event_checkoutbtnActionPerformed
+
     private void bookRoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookRoomActionPerformed
         // TODO add your handling code here:
         List<Guest> guests = new ArrayList<>();
@@ -365,17 +468,19 @@ public class MainScreen extends javax.swing.JFrame {
             Room r = new Room(guests, Integer.parseInt(roomNumber));
             r.save(dd.getSelectedItem() + " " + mm.getSelectedItem() + " " + yy.getSelectedItem());
         }else {
-            System.out.println("single guest");
+            String guestName1 = name1box.getText().trim();
+            String guestPhn1 = phn1.getText().trim();
+            String roomNumber = rno.getSelectedItem().toString();
+            Guest a = new Guest(guestName1, guestPhn1, roomNumber);
+            a.save();
+            guests.add(a);
+            Room r = new Room(guests, Integer.parseInt(roomNumber));
+            r.save(dd.getSelectedItem() + " " + mm.getSelectedItem() + " " + yy.getSelectedItem());
+//            System.out.println("single guest");
         }
-        Room room = new Room();
-        List<Room> rooms = room.getAvailable();
-        int size = rooms.size();
-        rno.removeAllItems();
-        for(int i = 0; i < size; i++) {
-            int roomNumber = rooms.get(i).roomNumber;
-            if ( roomNumber > 10 && roomNumber <= 20) rno.addItem(rooms.get(i).roomNumber + "");
-//                System.out.println(roomNumber);
-        }
+        updateCheckout();
+
+//        updateAvailableRooms();
     }//GEN-LAST:event_bookRoomActionPerformed
 
     private void name1boxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_name1boxActionPerformed
@@ -394,24 +499,15 @@ public class MainScreen extends javax.swing.JFrame {
             phone2.setEnabled(true);
 
             //Push Double Rooms in combo-box
-            rno.removeAllItems();
-            for(int i = 0; i < size; i++) {
-                int roomNumber = rooms.get(i).roomNumber;
-                if ( roomNumber > 200 && roomNumber <= 300) rno.addItem(rooms.get(i).roomNumber + "");
-//                System.out.println(roomNumber);
-            }
+            updateDouble();
 
         }else {
             name2.setEnabled(false);
             name2box.setEnabled(false);
             phn2.setEnabled(false);
             phone2.setEnabled(false);
+            updateSingle();
 
-            rno.removeAllItems();
-            for(int i = 0; i < size; i++) {
-                int roomNumber = rooms.get(i).roomNumber;
-                if ( roomNumber > 100 && roomNumber <= 200) rno.addItem(rooms.get(i).roomNumber + "");
-            }
         }
     }//GEN-LAST:event_roomtypeActionPerformed
 

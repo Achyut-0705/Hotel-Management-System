@@ -93,9 +93,79 @@ public class Room implements Rooms{
         }
         return rooms;
     }
+    public List<Room> getBooked() {
+        List<Room> rooms = new ArrayList<>();
+        DataBase db = new DataBase("hotel");
+        String url = db.getUrl();
+        String userName = db.userName;
+        String password = db.password;
+        Connection conn = null;
+        Statement smt = null;
+
+        try {
+            conn = DriverManager.getConnection(url, userName, password);
+            String query =
+                    "select * from hotel.rooms where isAvailable=\"false\"";
+
+            smt = conn.createStatement();
+            ResultSet result = smt.executeQuery(query);
+            while(result.next()) {
+                Room obj = new Room(Integer.parseInt(result.getString(2)));
+                rooms.add(obj);
+//                System.out.println(result.getString(2));
+            }
+
+        } catch(SQLException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return rooms;
+    }
+
+    public String checkout(String out) {
+        DataBase db = new DataBase("hotel");
+        String url = db.getUrl();
+        String userName = db.userName;
+        String password = db.password;
+        Connection conn = null;
+        Statement smt = null;
+        String checkin = "";
+
+        try {
+            conn = DriverManager.getConnection(url, userName, password);
+            smt = conn.createStatement();
+
+            String query =
+                    "update hotel.rooms set isAvailable=\"true\", checkout=\"" + out + "\" where roomnumber=" + this.roomNumber;
+
+            smt.execute(query);
+            query = "select checkin from hotel.rooms where roomnumber=" + this.roomNumber;
+            ResultSet result = smt.executeQuery(query);
+            while(result.next()) {
+                checkin = result.getString(1);
+                break;
+            }
+
+        } catch ( SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                smt.close();
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return checkin.trim().length() == 1 ? "0" + checkin : checkin;
+    }
 
     public static void main(String[] args) {
-        Room room = new Room();
-        System.out.println(room.getAvailable());
+        Room room = new Room(201);
+        room.checkout("30 march 2022");
     }
 }
