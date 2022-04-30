@@ -1,4 +1,11 @@
-package com.mycompany.hotelmanagement;
+package main.java.com.mycompany.hotelmanagement;
+
+import main.java.com.mycompany.hotelmanagement.utils.Guest;
+import main.java.com.mycompany.hotelmanagement.utils.Room;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class MainScreen extends javax.swing.JFrame {
     public MainScreen() {
@@ -107,6 +114,13 @@ public class MainScreen extends javax.swing.JFrame {
                 phn2ActionPerformed(evt);
             }
         });
+
+        bookbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bookRoomActionPerformed(evt);
+            }
+        });
+
 
         bookbtn.setFont(new java.awt.Font("Fira Sans", 0, 18)); // NOI18N
         bookbtn.setText("BOOK NOW");
@@ -325,6 +339,7 @@ public class MainScreen extends javax.swing.JFrame {
             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -332,36 +347,70 @@ public class MainScreen extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_phn2ActionPerformed
 
+    private void bookRoomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bookRoomActionPerformed
+        // TODO add your handling code here:
+        List<Guest> guests = new ArrayList<>();
+        if ( roomtype.getSelectedItem().equals("DOUBLE") ){
+            String guestName1 = name1box.getText().trim();
+            String guestName2 = name2box.getText().trim();
+            String guestPhn1 = phn1.getText().trim();
+            String guestPhn2 = phn2.getText().trim();
+            String roomNumber = rno.getSelectedItem().toString();
+            Guest a = new Guest(guestName1, guestPhn1, roomNumber);
+            Guest b = new Guest(guestName2, guestPhn2, roomNumber);
+            a.save();
+            b.save();
+            guests.add(a);
+            guests.add(b);
+            Room r = new Room(guests, Integer.parseInt(roomNumber));
+            r.save(dd.getSelectedItem() + " " + mm.getSelectedItem() + " " + yy.getSelectedItem());
+        }else {
+            System.out.println("single guest");
+        }
+        Room room = new Room();
+        List<Room> rooms = room.getAvailable();
+        int size = rooms.size();
+        rno.removeAllItems();
+        for(int i = 0; i < size; i++) {
+            int roomNumber = rooms.get(i).roomNumber;
+            if ( roomNumber > 10 && roomNumber <= 20) rno.addItem(rooms.get(i).roomNumber + "");
+//                System.out.println(roomNumber);
+        }
+    }//GEN-LAST:event_bookRoomActionPerformed
+
     private void name1boxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_name1boxActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_name1boxActionPerformed
 
     private void roomtypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomtypeActionPerformed
         // TODO add your handling code here:
-        if (roomtype.getSelectedItem().toString().equals("DOUBLE")) {
+        Room room = new Room();
+        List<Room> rooms = room.getAvailable();
+        int size = rooms.size();
+        if (Objects.requireNonNull(roomtype.getSelectedItem()).toString().equals("DOUBLE")) {
             name2.setEnabled(true);
             name2box.setEnabled(true);
             phn2.setEnabled(true);
             phone2.setEnabled(true);
-            
-            
-            //Push Double Rooms in combobox
+
+            //Push Double Rooms in combo-box
             rno.removeAllItems();
-            for(int i=1; i<=10; ++i)
-            {
-                rno.addItem(i+"");
+            for(int i = 0; i < size; i++) {
+                int roomNumber = rooms.get(i).roomNumber;
+                if ( roomNumber > 200 && roomNumber <= 300) rno.addItem(rooms.get(i).roomNumber + "");
+//                System.out.println(roomNumber);
             }
-        }
-        else {
+
+        }else {
             name2.setEnabled(false);
             name2box.setEnabled(false);
             phn2.setEnabled(false);
             phone2.setEnabled(false);
-            
+
             rno.removeAllItems();
-            for(int i=11; i<=20; ++i)
-            {
-                rno.addItem(i+"");
+            for(int i = 0; i < size; i++) {
+                int roomNumber = rooms.get(i).roomNumber;
+                if ( roomNumber > 100 && roomNumber <= 200) rno.addItem(rooms.get(i).roomNumber + "");
             }
         }
     }//GEN-LAST:event_roomtypeActionPerformed
@@ -400,11 +449,11 @@ public class MainScreen extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox<String> mm;
     private javax.swing.JComboBox<String> mm1;
-    private javax.swing.JTextField name1box;
+    private javax.swing.JTextField name1box; // guest 1 name
     private javax.swing.JLabel name2;
-    private javax.swing.JTextField name2box;
-    private javax.swing.JTextField phn1;
-    private javax.swing.JTextField phn2;
+    private javax.swing.JTextField name2box; // guest 2 name
+    private javax.swing.JTextField phn1; // guest 1 phone number
+    private javax.swing.JTextField phn2; // guest 2 phone number
     private javax.swing.JLabel phone2;
     private java.awt.PopupMenu popupMenu1;
     private javax.swing.JComboBox<String> rno;
